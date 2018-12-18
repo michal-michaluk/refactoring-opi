@@ -3,21 +3,27 @@ package shortages;
 import entities.ShortageEntity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Shortages {
-    public static Builder builder() {
-        return null;
+    private final String refNo;
+    private final List<ShortageEntity> list = new ArrayList<>();
+
+    public Shortages(String refNo) {
+        this.refNo = refNo;
     }
 
-    public class Builder {
-        public void add(String productRefNo, LocalDate now, long levelOnDelivery, LocalDate day) {
-            //levelOnDelivery * -1L;
+    public void add(LocalDate day, long levelOnDelivery) {
+        ShortageEntity entity = new ShortageEntity();
+        entity.setRefNo(refNo);
+        entity.setFound(LocalDate.now());
+        entity.setMissing(Math.abs(levelOnDelivery));
+        entity.setAtDay(day);
+        list.add(entity);
+    }
 
-        }
-
-        public List<ShortageEntity> build() {
-            return null;
-        }
+    public List<ShortageEntity> build() {
+        return list;
     }
 }

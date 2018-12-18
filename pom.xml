@@ -13,6 +13,7 @@
         <module>production-api</module>
         <module>production-impl</module>
         <module>production-persistence</module>
+        <module>shortages-model</module>
     </modules>
 
 </project>
