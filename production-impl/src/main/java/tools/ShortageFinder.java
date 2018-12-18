@@ -8,6 +8,7 @@ import external.CurrentStock;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,15 +39,18 @@ public class ShortageFinder {
      * TODO algorithm is finding wrong shortages, when more productions is planned in a single day
      */
     public static List<ShortageEntity> findShortages(LocalDate today, int daysAhead, CurrentStock stock,
-                                                     List<ProductionEntity> productions, List<DemandEntity> demands) {
+                                                     List<ProductionEntity> productions, List<DemandEntity> demands, String notUsedYet) {
         List<LocalDate> dates = Stream.iterate(today, date -> date.plusDays(1))
                 .limit(daysAhead)
                 .collect(toList());
 
         String productRefNo = null;
-        HashMap<LocalDate, ProductionEntity> outputs = new HashMap<>();
+        HashMap<LocalDate, List<ProductionEntity>> outputs = new HashMap<>();
         for (ProductionEntity production : productions) {
-            outputs.put(production.getStart().toLocalDate(), production);
+            if (!outputs.containsKey(production.getStart().toLocalDate())) {
+                outputs.put(production.getStart().toLocalDate(), new ArrayList<>());
+            }
+            outputs.get(production.getStart().toLocalDate()).add(production);
             productRefNo = production.getForm().getRefNo();
         }
         HashMap<LocalDate, DemandEntity> demandsPerDay = new HashMap<>();
@@ -60,16 +64,18 @@ public class ShortageFinder {
         for (LocalDate day : dates) {
             DemandEntity demand = demandsPerDay.get(day);
             if (demand == null) {
-                ProductionEntity production = outputs.get(day);
-                if (production != null) {
-                    level += production.getOutput();
+                List<ProductionEntity> production = outputs.get(day);
+                long output = 0;
+                for (ProductionEntity entity : production) {
+                    output = entity.getOutput();
                 }
+                level += output;
                 continue;
             }
             long produced = 0;
-            ProductionEntity production = outputs.get(day);
-            if (production != null) {
-                produced = production.getOutput();
+            List<ProductionEntity> production = outputs.get(day);
+            for (ProductionEntity entity : production) {
+                produced += entity.getOutput();
             }
 
             long levelOnDelivery;

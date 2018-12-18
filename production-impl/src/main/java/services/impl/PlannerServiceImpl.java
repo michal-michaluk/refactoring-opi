@@ -238,25 +238,26 @@ public class PlannerServiceImpl implements PlannerService {
         LocalDate today = LocalDate.now(clock);
 
         for (ProductionEntity production : products) {
-            CurrentStock currentStock = stockService.getCurrentStock(production.getForm().getRefNo());
+            String refNo = production.getForm().getRefNo();
+            CurrentStock currentStock = stockService.getCurrentStock(refNo);
             List<ShortageEntity> shortages = ShortageFinder.findShortages(
                     today, confShortagePredictionDaysAhead,
                     currentStock,
-                    productionDao.findFromTime(production.getForm().getRefNo(), today.atStartOfDay()),
-                    demandDao.findFrom(today.atStartOfDay(), production.getForm().getRefNo())
-            );
-            List<ShortageEntity> previous = shortageDao.getForProduct(production.getForm().getRefNo());
+                    productionDao.findFromTime(refNo, today.atStartOfDay()),
+                    demandDao.findFrom(today.atStartOfDay(), refNo),
+                    refNo);
+            List<ShortageEntity> previous = shortageDao.getForProduct(refNo);
             if (!shortages.isEmpty() && !shortages.equals(previous)) {
                 notificationService.markOnPlan(shortages);
                 if (currentStock.getLocked() > 0 &&
                         shortages.get(0).getAtDay()
                                 .isBefore(today.plusDays(confIncreaseQATaskPriorityInDays))) {
-                    jiraService.increasePriorityFor(production.getForm().getRefNo());
+                    jiraService.increasePriorityFor(refNo);
                 }
                 shortageDao.save(shortages);
             }
             if (shortages.isEmpty() && !previous.isEmpty()) {
-                shortageDao.delete(production.getForm().getRefNo());
+                shortageDao.delete(refNo);
             }
         }
     }

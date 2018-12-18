@@ -70,8 +70,8 @@ public class WarehouseServiceImpl implements WarehouseService {
                 today, confShortagePredictionDaysAhead,
                 currentStock,
                 productionDao.findFromTime(productRefNo, today.atStartOfDay()),
-                demandDao.findFrom(today.atStartOfDay(), productRefNo)
-        );
+                demandDao.findFrom(today.atStartOfDay(), productRefNo),
+                productRefNo);
 
         List<ShortageEntity> previous = shortageDao.getForProduct(productRefNo);
         if (shortages != null && !shortages.equals(previous)) {

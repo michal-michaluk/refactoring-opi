@@ -104,7 +104,8 @@ public class LogisticServiceImpl implements LogisticService {
                 today, confShortagePredictionDaysAhead,
                 stock,
                 productionDao.findFromTime(productRefNo, today.atStartOfDay()),
-                demandDao.findFrom(today.atStartOfDay(), productRefNo)
+                demandDao.findFrom(today.atStartOfDay(), productRefNo),
+                productRefNo
         );
 
         List<ShortageEntity> previous = shortageDao.getForProduct(productRefNo);

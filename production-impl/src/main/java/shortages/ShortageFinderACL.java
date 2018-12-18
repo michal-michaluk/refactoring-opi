@@ -1,16 +1,15 @@
-package tools;
+package shortages;
 
 import entities.DemandEntity;
 import entities.ProductionEntity;
 import entities.ShortageEntity;
 import external.CurrentStock;
-import shortages.ShortageCalculator;
-import shortages.ShortageCalculatorProvider;
+import tools.ShortageFinder;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class ShortageFinder {
+public class ShortageFinderACL {
 
     /**
      * Production at day of expected delivery is quite complex:
@@ -34,14 +33,28 @@ public class ShortageFinder {
      */
     public static List<ShortageEntity> findShortages(LocalDate today, int daysAhead, CurrentStock stock,
                                                      List<ProductionEntity> productions, List<DemandEntity> demands, String productRefNo) {
+
+        List<ShortageEntity> oldModelCalculation = ShortageFinder.findShortages(today, daysAhead, stock, productions, demands, productRefNo);
+        //if (Features.NEW_SHORTAGE_FINDER.isEnabled()) {
+//            try {
+//                List<ShortageEntity> newModelCalculation = calculateNewModel(today, daysAhead, stock, productions, demands, productRefNo);
+//
+//                compareAndLog(oldModelCalculation, newModelCalculation);
+//            } catch (Throwable t) {
+//
+//            }
+//        }
+
+        return oldModelCalculation;
+    }
+
+    private static List<ShortageEntity> calculateNewModel(LocalDate today, int daysAhead, CurrentStock stock, List<ProductionEntity> productions, List<DemandEntity> demands, String productRefNo) {
         ShortageCalculatorProvider provider = new ShortageCalculatorProvider(today, daysAhead, stock, productions, demands);
-
         ShortageCalculator calculator = provider.get(productRefNo);
-
         return calculator.findShortages();
     }
 
-    private ShortageFinder() {
+    private ShortageFinderACL() {
     }
 
 }
