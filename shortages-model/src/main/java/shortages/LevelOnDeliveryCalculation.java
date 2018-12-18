@@ -2,7 +2,7 @@ package shortages;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-interface LevelOnDeliveryCalculation {
+public interface LevelOnDeliveryCalculation {
 
     LevelOnDeliveryCalculation atDayStart = (long level, Demands.DailyDemand demand, long produced) -> level - demand.getLevel();
     LevelOnDeliveryCalculation tillEndOfDay = (long level, Demands.DailyDemand demand, long produced) -> level - demand.getLevel() + produced;

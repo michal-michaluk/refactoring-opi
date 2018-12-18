@@ -1,8 +1,5 @@
 package shortages;
 
-import external.CurrentStock;
-import external.StockService;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,7 +11,7 @@ public class ShortageCalculatorProvider {
 
     private ProductionsProvider production;
     private DemandProvider demands;
-    private StockService stockService;
+    private WarehouseStock stocks;
     private Clock clock;
 
     private int daysAhead;
@@ -24,7 +21,7 @@ public class ShortageCalculatorProvider {
         List<LocalDate> dates = Stream.iterate(today, date -> date.plusDays(1))
                 .limit(daysAhead)
                 .collect(toList());
-        CurrentStock stock = stockService.getCurrentStock(productRefNo);
+        CurrentStock stock = stocks.getCurrentStock(productRefNo);
 
         Demands demandsPerDay = demands.createDemands(productRefNo, today);
         ProductionsOutputs outputs = production.createProductionOutputs(productRefNo, today);

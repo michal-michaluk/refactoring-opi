@@ -1,8 +1,5 @@
 package shortages;
 
-import entities.ShortageEntity;
-import external.CurrentStock;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,10 +18,10 @@ public class ShortageCalculator {
         this.demandsPerDay = demandsPerDay;
     }
 
-    public List<ShortageEntity> findShortages() {
+    public Shortages findShortages() {
         long level = stock.getLevel();
 
-        Shortages gap = new Shortages(productRefNo);
+        Shortages gap = new Shortages(stock, productRefNo);
         for (LocalDate day : dates) {
             Demands.DailyDemand demand = demandsPerDay.get(day);
             if (demand == null) {
@@ -41,6 +38,6 @@ public class ShortageCalculator {
             long endOfDayLevel = level + produced - demand.getLevel();
             level = endOfDayLevel >= 0 ? endOfDayLevel : 0;
         }
-        return gap.build();
+        return gap;
     }
 }
