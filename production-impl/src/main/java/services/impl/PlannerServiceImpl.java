@@ -8,22 +8,22 @@ import dao.ProductionDao;
 import entities.FormEntity;
 import entities.LineEntity;
 import entities.ProductionEntity;
-import external.ShortageProcessing;
 import tools.Util;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PlannerServiceImpl implements PlannerService {
 
     //Inject all
-    private ShortageProcessing shortages;
 
     private ProductionDao productionDao;
     private LineDao lineDao;
     private FormDao formDao;
+    private ProductionEvents events;
 
     /**
      * <pre>
@@ -98,7 +98,10 @@ public class PlannerServiceImpl implements PlannerService {
         productionDao.save(newScheduled);
 
         // Shortages may arise if insufficient production was planned.
-        shortages.processShortages(changed);
+        events.emit(new ProductionChanged(
+                changed.stream()
+                        .map(production -> production.getForm().getRefNo())
+                        .collect(Collectors.toSet())));
     }
 
     /**
@@ -133,7 +136,11 @@ public class PlannerServiceImpl implements PlannerService {
         production.setDuration(duration);
 
         // Shortages may arise if insufficient production was planned.
-        shortages.processShortages(changed);
+        events.emit(new ProductionChanged(
+                changed.stream()
+                        .map(p -> p.getForm().getRefNo())
+                        .collect(Collectors.toSet()))
+        );
     }
 
     //Transactional
