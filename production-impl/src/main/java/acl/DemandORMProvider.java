@@ -1,12 +1,11 @@
 package acl;
 
-import dao.DemandDao;
-import entities.DemandEntity;
+import demands.DemandReadModel;
+import demands.DemandReadModelDao;
 import enums.DeliverySchema;
 import shortages.DemandProvider;
 import shortages.Demands;
 import shortages.LevelOnDeliveryCalculation;
-import tools.Util;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -16,19 +15,21 @@ import java.util.stream.Collectors;
 
 public class DemandORMProvider implements DemandProvider {
 
-    private DemandDao demandDao;
+    private DemandReadModelDao readModel;
     private Map<DeliverySchema, LevelOnDeliveryCalculation> mapping = init();
 
     @Override
     public Demands createDemands(String productRefNo, LocalDate today) {
-        List<DemandEntity> demands = demandDao.findFrom(today.atStartOfDay(), productRefNo);
-        return new Demands(demands.stream().collect(Collectors.toMap(
-                DemandEntity::getDay,
-                demand -> new Demands.DailyDemand(
-                        Util.getLevel(demand),
-                        pickVariant(Util.getDeliverySchema(demand))
-                )
-        )));
+        List<DemandReadModel> demands = readModel.findFrom(today.atStartOfDay(), productRefNo);
+
+        return new Demands(demands.stream()
+                .collect(Collectors.toMap(
+                        DemandReadModel::getDay,
+                        demand -> new Demands.DailyDemand(
+                                demand.getLevel(),
+                                pickVariant(demand.getDeliverySchema())
+                        )
+                )));
     }
 
     private LevelOnDeliveryCalculation pickVariant(DeliverySchema deliverySchema) {

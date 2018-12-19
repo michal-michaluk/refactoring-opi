@@ -3,10 +3,9 @@ package services.impl;
 import api.AdjustDemandDto;
 import api.LogisticService;
 import api.StockForecastDto;
-import dao.DemandDao;
-import entities.DemandEntity;
-import entities.ManualAdjustmentEntity;
-import external.ShortageProcessing;
+import demands.DemandId;
+import demands.DemandObject;
+import demands.DemandRepository;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -14,9 +13,8 @@ import java.time.LocalDate;
 public class LogisticServiceImpl implements LogisticService {
 
     //Inject all
-    private DemandDao demandDao;
+    private DemandRepository repository;
     private Clock clock;
-    private ShortageProcessing shortages;
 
     /**
      * <pre>
@@ -42,16 +40,13 @@ public class LogisticServiceImpl implements LogisticService {
         if (adjustment.getAtDay().isBefore(LocalDate.now(clock))) {
             return; // TODO it is UI issue or reproduced post
         }
-        DemandEntity demand = demandDao.getCurrent(adjustment.getProductRefNo(), adjustment.getAtDay());
 
-        ManualAdjustmentEntity manualAdjustment = new ManualAdjustmentEntity();
-        manualAdjustment.setLevel(adjustment.getLevel());
-        manualAdjustment.setNote(adjustment.getNote());
-        manualAdjustment.setDeliverySchema(adjustment.getDeliverySchema());
+        DemandObject object = repository.get(getId(adjustment));
+        object.adjustDemand(adjustment);
+    }
 
-        demand.getAdjustment().add(manualAdjustment);
-
-        shortages.processShortages(adjustment.getProductRefNo());
+    private DemandId getId(AdjustDemandDto adjustment) {
+        return new DemandId(adjustment.getProductRefNo(), adjustment.getAtDay());
     }
 
     /**
@@ -73,6 +68,7 @@ public class LogisticServiceImpl implements LogisticService {
     public void processCallof(Object document) {
         // TODO implement me later
         // processShortages()
+
     }
 
     //ReadOnly
@@ -80,5 +76,6 @@ public class LogisticServiceImpl implements LogisticService {
     public StockForecastDto getStockForecast(String productRefNo) {
         return new StockForecastDto();
     }
+
 
 }
